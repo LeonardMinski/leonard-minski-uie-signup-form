@@ -1,0 +1,235 @@
+
+:host {
+  // Design tokens
+  --color-bg: #f8f7f5;
+  --color-surface: #fff;
+  --color-heading: #102a43;
+  --color-text: #475569;
+  --color-primary: #006b63;
+  --color-primary-hover: #00554f;
+  --color-border: #94a3b8;
+  --color-error: #b42318;
+  --color-success-bg: #e6f4f1;
+
+  --radius-card: 20px;
+  --radius-control: 8px;
+  --field-gap: 24px;
+
+  display: block;
+  font-family:
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    sans-serif;
+  color: var(--color-text);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+// Page layout
+.sign-up-page {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: var(--color-bg);
+}
+
+.sign-up-card {
+  width: min(100%, 600px);
+  padding: 48px;
+  background: var(--color-surface);
+  border: 1px solid #e2e8f0;
+  border-radius: var(--radius-card);
+}
+
+// Shared typography
+.sign-up-header h1,
+.success-message h1 {
+  margin: 0 0 16px;
+  color: var(--color-heading);
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+// Form header
+.sign-up-header {
+  margin-bottom: 40px;
+
+  .eyebrow {
+    margin: 0 0 12px;
+    color: var(--color-primary);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .description {
+    margin: 0;
+    font-size: 16px;
+    line-height: 1.6;
+  }
+}
+
+// Form layout
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--field-gap);
+}
+
+.email-field {
+  grid-column: 1 / -1;
+}
+
+// Form fields
+.form-field {
+  min-width: 0;
+
+  label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--color-heading);
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  input {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    min-height: 52px;
+    padding: 12px 16px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-control);
+    background: var(--color-surface);
+    color: var(--color-heading);
+    font: inherit;
+    font-size: 16px;
+
+    &::placeholder {
+      color: #64748b;
+    }
+
+    &[aria-invalid='true'] {
+      border-color: var(--color-error);
+      box-shadow: inset 0 0 0 1px var(--color-error);
+    }
+
+    &:focus-visible {
+      outline: 3px solid var(--color-primary);
+      outline-offset: 2px;
+    }
+  }
+}
+
+// Shared error styles
+.error {
+  margin: 8px 0 0;
+  color: var(--color-error);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+// Form actions
+.form-actions {
+  display: grid;
+  gap: 16px;
+  margin-top: 32px;
+}
+
+.submit-button {
+  min-height: 52px;
+  padding: 12px 24px;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: var(--color-primary);
+  color: #fff;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 150ms ease;
+
+  &:hover:not(:disabled) {
+    background: var(--color-primary-hover);
+  }
+
+  &:focus-visible {
+    outline: 3px solid var(--color-heading);
+    outline-offset: 3px;
+  }
+
+  &:disabled {
+    opacity: 0.65;
+    cursor: wait;
+  }
+}
+
+.privacy-note {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+// Success confirmation
+.success-message {
+  padding-block: 24px;
+  text-align: center;
+
+  .success-icon {
+    display: grid;
+    place-items: center;
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 24px;
+    border-radius: 50%;
+    background: var(--color-success-bg);
+    color: var(--color-primary);
+    font-size: 32px;
+    font-weight: 700;
+  }
+
+  p {
+    margin: 0;
+    color: var(--color-text);
+    font-size: 16px;
+    line-height: 1.6;
+  }
+}
+
+// Mobile layout
+@media (max-width: 600px) {
+  .sign-up-page {
+    padding: 16px;
+  }
+
+  .sign-up-card {
+    padding: 24px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .email-field {
+    grid-column: auto;
+  }
+}
+
+// Reduced motion
+@media (prefers-reduced-motion: reduce) {
+  .submit-button {
+    transition: none;
+  }
+}

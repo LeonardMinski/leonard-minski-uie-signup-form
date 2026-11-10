@@ -1,0 +1,90 @@
+
+<main class="sign-up-page">
+  <section class="sign-up-card" aria-labelledby="sign-up-title">
+
+    @if (submitted()) {
+      <div class="success-message" role="status">
+        <span class="success-icon" aria-hidden="true">✓</span>
+
+        <h1 id="sign-up-title">You're signed up!</h1>
+
+        <p>
+          Thank you for signing up to receive news and
+          product updates from National Grid.
+        </p>
+      </div>
+    } @else {
+      <header class="sign-up-header">
+        <p class="eyebrow">SIGN UP</p>
+
+        <h1 id="sign-up-title">Sign up for updates</h1>
+
+        <p class="description">
+          Get the latest news and product updates from National Grid.
+        </p>
+      </header>
+
+      <form
+        class="sign-up-form"
+        [formGroup]="signUpForm"
+        (ngSubmit)="onSubmit()"
+        novalidate
+      >
+        <div class="form-grid">
+          @for (field of fields; track field.name) {
+            @let control = signUpForm.controls[field.name];
+            @let showError = control.invalid && control.touched;
+
+            <div
+              class="form-field"
+              [class.email-field]="field.name === 'email'"
+            >
+              <label [for]="field.name">
+                {{ field.label }}
+              </label>
+
+              <input
+                [id]="field.name"
+                [type]="field.type"
+                [formControlName]="field.name"
+                [autocomplete]="field.autocomplete"
+                [placeholder]="field.placeholder"
+                [attr.aria-invalid]="showError"
+                [attr.aria-describedby]="showError ? field.name + '-error' : null"
+                required
+              />
+
+              @if (showError) {
+                <p class="error" [id]="field.name + '-error'">
+                  {{ getErrorMessage(control, field.errors) }}
+                </p>
+              }
+            </div>
+          }
+        </div>
+
+        <div class="form-actions">
+          <button
+            class="submit-button"
+            type="submit"
+            [disabled]="submitting()"
+          >
+            {{ submitting() ? 'Submitting...' : 'Sign up for updates' }}
+          </button>
+
+          @if (errorMessage()) {
+            <p class="error" role="alert">
+              {{ errorMessage() }}
+            </p>
+          }
+
+          <p class="privacy-note">
+            We'll use your details to send you marketing
+            communications about National Grid products and updates.
+          </p>
+        </div>
+      </form>
+    }
+
+  </section>
+</main>
