@@ -34,6 +34,7 @@ export class SignUp {
   private readonly injector = inject(Injector);
   private readonly signUpApi = inject(SignUpApi);
 
+  @ViewChild('formElement') private formElement?: ElementRef<HTMLFormElement>;
   @ViewChild('submitButton') private submitButton?: ElementRef<HTMLButtonElement>;
   @ViewChild('successHeading') private successHeading?: ElementRef<HTMLHeadingElement>;
 
@@ -59,6 +60,13 @@ export class SignUp {
 
     if (this.signUpForm.invalid) {
       this.signUpForm.markAllAsTouched();
+      afterNextRender(
+        () =>
+          this.formElement?.nativeElement
+            .querySelector<HTMLInputElement>('input[aria-invalid="true"]')
+            ?.focus(),
+        { injector: this.injector },
+      );
       return;
     }
 

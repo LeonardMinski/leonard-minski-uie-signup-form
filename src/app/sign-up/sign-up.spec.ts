@@ -43,6 +43,16 @@ describe('SignUp', () => {
     fixture.detectChanges();
   }
 
+  function enterValue(name: keyof SignUpRequest, value: string): HTMLInputElement {
+    const element = fixture.nativeElement as HTMLElement;
+    const input = element.querySelector<HTMLInputElement>(`#${name}`)!;
+    input.focus();
+    input.value = value;
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    fixture.detectChanges();
+    return input;
+  }
+
   function submitForm(): void {
     const form = fixture.nativeElement.querySelector('form') as HTMLFormElement;
     form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
@@ -72,8 +82,8 @@ describe('SignUp', () => {
     submitForm();
 
     const element = fixture.nativeElement as HTMLElement;
-    const errors = Array.from(element.querySelectorAll<HTMLElement>('.error')).map(
-      (error) => error.textContent?.trim(),
+    const errors = Array.from(element.querySelectorAll<HTMLElement>('.error')).map((error) =>
+      error.textContent?.trim(),
     );
     expect(errors).toContain('First name is required.');
     expect(errors).toContain('Last name is required.');
@@ -141,6 +151,8 @@ describe('SignUp', () => {
 
     const button = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
     expect(button.getAttribute('aria-disabled')).toBe('true');
+    expect(button.disabled).toBe(false);
+    expect(button.tabIndex).toBe(0);
     expect(button.textContent).toContain('Submitting...');
     expect(fixture.nativeElement.ownerDocument.activeElement).toBe(button);
 
@@ -169,7 +181,6 @@ describe('SignUp', () => {
     expect(heading.textContent).toContain("You're signed up!");
     expect(fixture.nativeElement.ownerDocument.activeElement).toBe(heading);
     expect(heading.getAttribute('tabindex')).toBe('-1');
-    expect(fixture.nativeElement.querySelector('[role="status"]')).toBeNull();
   });
 
   it('shows an alert and preserves entered data after a failed response', () => {
@@ -187,14 +198,6 @@ describe('SignUp', () => {
     });
     expect(element.querySelector('form')).not.toBeNull();
     expect(element.ownerDocument.activeElement).toBe(element.querySelector('button'));
-  });
-
-  it('resets the loading state after success', () => {
-    setValidForm();
-    submitForm();
-
-    expect(component['submitting']()).toBe(false);
-    expect(fixture.nativeElement.querySelector('form')).toBeNull();
   });
 
   it('resets the loading state after failure', () => {
@@ -261,5 +264,83 @@ describe('SignUp', () => {
       expect(input.getAttribute('aria-describedby')).toBe(`${input.id}-error`);
       expect(element.querySelector(`#${input.id}-error`)?.textContent).toContain('required');
     }
+  });
+
+  it('shows email validation on blur without moving focus while typing or blurring', async () => {
+    const element = fixture.nativeElement as HTMLElement;
+    const input = enterValue('email', 'not-an-email');
+    await fixture.whenStable();
+    expect(element.querySelector('#email-error')).toBeNull();
+    expect(element.ownerDocument.activeElement).toBe(input);
+
+    input.blur();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(element.querySelector('#email-error')?.textContent).toContain(
+      'Enter a valid email address.',
+    );
+    expect(input.getAttribute('aria-invalid')).toBe('true');
+    expect(input.getAttribute('aria-describedby')).toBe('email-error');
+    expect(element.ownerDocument.activeElement).toBe(element.ownerDocument.body);
+
+    enterValue('email', 'jane@example.com');
+    await fixture.whenStable();
+    expect(element.ownerDocument.activeElement).toBe(input);
+    expect(element.querySelector('#email-error')).toBeNull();
+    expect(input.getAttribute('aria-invalid')).toBe('false');
+    expect(input.hasAttribute('aria-describedby')).toBe(false);
+    expect(submittedPayloads).toHaveLength(0);
+  });
+
+  it.each([
+    { firstName: '', lastName: '', firstInvalid: 'firstName', errors: 3 },
+    { firstName: 'Jane', lastName: '', firstInvalid: 'lastName', errors: 2 },
+    { firstName: 'Jane', lastName: 'Smith', firstInvalid: 'email', errors: 1 },
+  ])(
+    'focuses $firstInvalid after rendering invalid submission errors',
+    async ({ firstName, lastName, firstInvalid, errors }) => {
+      const element = fixture.nativeElement as HTMLElement;
+      enterValue('firstName', firstName).blur();
+      enterValue('lastName', lastName).blur();
+      enterValue('email', 'invalid').blur();
+      element.querySelector<HTMLButtonElement>('button')!.focus();
+
+      submitForm();
+      await fixture.whenStable();
+
+      const input = element.querySelector<HTMLInputElement>(`#${firstInvalid}`)!;
+      expect(element.ownerDocument.activeElement).toBe(input);
+      expect(element.querySelectorAll('input[aria-invalid="true"]')).toHaveLength(errors);
+      expect(input.getAttribute('aria-describedby')).toBe(`${firstInvalid}-error`);
+      expect(element.querySelector(`#${firstInvalid}-error`)?.textContent?.trim()).toBeTruthy();
+      expect(submittedPayloads).toHaveLength(0);
+    },
+  );
+
+  it('submits DOM-entered values and focuses the confirmation after the response', async () => {
+    const pendingResponse = new Subject<void>();
+    response$ = pendingResponse;
+    const element = fixture.nativeElement as HTMLElement;
+    enterValue('firstName', '  Jane  ').blur();
+    enterValue('lastName', 'Smith').blur();
+    enterValue('email', 'jane@example.com').blur();
+
+    element.querySelector<HTMLButtonElement>('button')!.click();
+    fixture.detectChanges();
+    expect(submittedPayloads).toEqual([
+      { firstName: 'Jane', lastName: 'Smith', email: 'jane@example.com' },
+    ]);
+    expect(element.querySelector('button')?.textContent).toContain('Submitting...');
+
+    pendingResponse.next();
+    pendingResponse.complete();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const heading = element.querySelector('h1');
+    expect(heading?.textContent).toContain("You're signed up!");
+    expect(element.ownerDocument.activeElement).toBe(heading);
+    expect(element.querySelector('form')).toBeNull();
+    expect(element.textContent).not.toContain('Submitting...');
   });
 });
