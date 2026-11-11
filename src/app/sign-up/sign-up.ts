@@ -51,7 +51,6 @@ export class SignUp {
 
   getErrorMessage(control: AbstractControl, errors: Record<string, string>): string {
     const errorKey = Object.keys(errors).find((key) => control.hasError(key));
-
     return errorKey ? errors[errorKey] : '';
   }
 
@@ -77,7 +76,6 @@ export class SignUp {
 
     this.signUpApi
       .submitSignUp(payload)
-
       .pipe(finalize(() => this.submitting.set(false)))
       .subscribe({
         next: () => {

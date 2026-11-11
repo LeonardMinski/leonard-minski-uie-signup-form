@@ -11,6 +11,5 @@ export const signUpMockInterceptor: HttpInterceptorFn = (req, next) => {
       }),
     ).pipe(delay(500));
   }
-
   return next(req);
 };
