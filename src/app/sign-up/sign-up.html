@@ -3,10 +3,10 @@
   <section class="sign-up-card" aria-labelledby="sign-up-title">
 
     @if (submitted()) {
-      <div class="success-message" role="status">
+      <div class="success-message">
         <span class="success-icon" aria-hidden="true">✓</span>
 
-        <h1 id="sign-up-title">You're signed up!</h1>
+        <h1 #successHeading id="sign-up-title" tabindex="-1">You're signed up!</h1>
 
         <p>
           Thank you for signing up to receive news and
@@ -65,9 +65,10 @@
 
         <div class="form-actions">
           <button
+            #submitButton
             class="submit-button"
             type="submit"
-            [disabled]="submitting()"
+            [attr.aria-disabled]="submitting()"
           >
             {{ submitting() ? 'Submitting...' : 'Sign up for updates' }}
           </button>

@@ -27,7 +27,7 @@ Run the test suite once with `npm run test:ci`. Use `npm test` to run Angular's 
 
 Reactive Forms provide typed form values and field-level validation. Field labels, input types, autocomplete hints and validation messages are defined in one configuration, making it straightforward to add fields without duplicating the template structure.
 
-The form delegates submission to an injectable API service so HTTP concerns stay separate from the UI. A functional interceptor handles `POST /api/sign-up` locally and returns HTTP 200 with an empty response body after a short simulated delay. The form shows required and email-format validation, a submitting state, an error message on failure and a confirmation on success.
+The form delegates submission to an injectable API service so HTTP concerns stay separate from the UI. The `POST /api/sign-up` endpoint is mocked entirely in the browser by a functional HTTP interceptor, which returns HTTP 200 with an empty response body after a short simulated delay without contacting a real backend. No customer information is stored or transmitted externally. The form shows required and email-format validation, a submitting state, an error message on failure and a confirmation on success.
 
 ## Testing
 
@@ -35,4 +35,4 @@ The tests cover required fields, email validation, invalid submission, request p
 
 ## Limitations
 
-The API response is simulated in the browser. No customer information is persisted or delivered to National Grid.
+The API response is simulated in the browser. No customer information is stored or transmitted externally. A production implementation would require server-side validation, appropriate security controls and compliance with applicable marketing privacy requirements.

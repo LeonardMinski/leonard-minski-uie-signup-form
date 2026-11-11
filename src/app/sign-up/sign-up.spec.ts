@@ -59,6 +59,40 @@ describe('SignUp', () => {
     expect(component.signUpForm.controls.email.hasError('required')).toBe(true);
   });
 
+  it('rejects whitespace-only first and last names using the required errors', () => {
+    component.signUpForm.setValue({
+      firstName: '   ',
+      lastName: '\t ',
+      email: 'jane.smith@example.com',
+    });
+
+    expect(component.signUpForm.controls.firstName.hasError('required')).toBe(true);
+    expect(component.signUpForm.controls.lastName.hasError('required')).toBe(true);
+
+    submitForm();
+
+    const element = fixture.nativeElement as HTMLElement;
+    const errors = Array.from(element.querySelectorAll<HTMLElement>('.error')).map(
+      (error) => error.textContent?.trim(),
+    );
+    expect(errors).toContain('First name is required.');
+    expect(errors).toContain('Last name is required.');
+  });
+
+  it('preserves legitimate spaces within names', () => {
+    component.signUpForm.setValue({
+      firstName: 'Mary Jane',
+      lastName: 'Van der Smith',
+      email: 'mary.jane@example.com',
+    });
+
+    expect(component.signUpForm.valid).toBe(true);
+    expect(component.signUpForm.getRawValue()).toMatchObject({
+      firstName: 'Mary Jane',
+      lastName: 'Van der Smith',
+    });
+  });
+
   it('rejects an invalid email address', () => {
     component.signUpForm.setValue({
       firstName: 'Jane',
@@ -106,8 +140,9 @@ describe('SignUp', () => {
     submitForm();
 
     const button = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
-    expect(button.disabled).toBe(true);
+    expect(button.getAttribute('aria-disabled')).toBe('true');
     expect(button.textContent).toContain('Submitting...');
+    expect(fixture.nativeElement.ownerDocument.activeElement).toBe(button);
 
     submitForm();
 
@@ -120,8 +155,21 @@ describe('SignUp', () => {
     submitForm();
 
     const element: HTMLElement = fixture.nativeElement;
-    expect(element.querySelector('[role="status"]')?.textContent).toContain("You're signed up!");
+    expect(element.querySelector('h1')?.textContent).toContain("You're signed up!");
     expect(element.querySelector('form')).toBeNull();
+  });
+
+  it('moves focus to the rendered success heading after a successful response', async () => {
+    setValidForm();
+    submitForm();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const heading = fixture.nativeElement.querySelector('h1') as HTMLHeadingElement;
+    expect(heading.textContent).toContain("You're signed up!");
+    expect(fixture.nativeElement.ownerDocument.activeElement).toBe(heading);
+    expect(heading.getAttribute('tabindex')).toBe('-1');
+    expect(fixture.nativeElement.querySelector('[role="status"]')).toBeNull();
   });
 
   it('shows an alert and preserves entered data after a failed response', () => {
@@ -138,6 +186,7 @@ describe('SignUp', () => {
       email: 'jane.smith@example.com',
     });
     expect(element.querySelector('form')).not.toBeNull();
+    expect(element.ownerDocument.activeElement).toBe(element.querySelector('button'));
   });
 
   it('resets the loading state after success', () => {
@@ -154,7 +203,7 @@ describe('SignUp', () => {
     submitForm();
 
     const button = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
-    expect(button.disabled).toBe(false);
+    expect(button.getAttribute('aria-disabled')).toBe('false');
     expect(button.textContent).toContain('Sign up for updates');
   });
 
@@ -168,7 +217,7 @@ describe('SignUp', () => {
     submitForm();
 
     expect(submittedPayloads).toHaveLength(2);
-    expect(fixture.nativeElement.querySelector('[role="status"]')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('h1')?.textContent).toContain("You're signed up!");
   });
 
   it('associates each input with a label', () => {
@@ -179,6 +228,24 @@ describe('SignUp', () => {
     for (const input of inputs) {
       expect(element.querySelector(`label[for="${input.id}"]`)).not.toBeNull();
     }
+  });
+
+  it('trims whitespace from names before submitting', () => {
+    component.signUpForm.setValue({
+      firstName: '   Jeff  ',
+      lastName: '   Smith   ',
+      email: 'jeff@example.com',
+    });
+
+    submitForm();
+
+    expect(submittedPayloads).toEqual([
+      {
+        firstName: 'Jeff',
+        lastName: 'Smith',
+        email: 'jeff@example.com',
+      },
+    ]);
   });
 
   it('connects invalid field messages to inputs with accessible error attributes', () => {

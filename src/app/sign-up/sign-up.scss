@@ -7,7 +7,7 @@
   --color-text: #475569;
   --color-primary: #006b63;
   --color-primary-hover: #00554f;
-  --color-border: #94a3b8;
+  --color-border: #64748b;
   --color-error: #b42318;
   --color-success-bg: #e6f4f1;
 
@@ -169,7 +169,7 @@
     outline-offset: 3px;
   }
 
-  &:disabled {
+  &[aria-disabled='true'] {
     opacity: 0.65;
     cursor: wait;
   }
@@ -186,6 +186,11 @@
 .success-message {
   padding-block: 24px;
   text-align: center;
+
+  h1:focus {
+    outline: 3px solid var(--color-primary);
+    outline-offset: 4px;
+  }
 
   .success-icon {
     display: grid;

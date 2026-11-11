@@ -8,6 +8,8 @@ export class SignUpApi {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = '/api/sign-up';
 
+  
+
   submitSignUp(payload: SignUpRequest): Observable<void> {
     return this.http.post<void>(this.apiUrl, payload);
   }
